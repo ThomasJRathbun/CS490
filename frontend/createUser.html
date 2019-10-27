@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta  charset="UTF-8">
+    <title>Cs-490 Project create user screen</title>
+    <link rel="stylesheet" type = "text/css" href="styles.css">
+
+
+    </head>
+
+  <body>
+    <form class ="form" id ="myForm">
+      <label for="inp_username">username</label>
+      <input type="text" name="username" id = "username">
+      <label for ="inp_password"> Password</label>
+      <input type="password" name="password" id="password">
+      <label for ="inp_utype"> Account Type</label>
+      <input type="utype" name="utype" id="utype">
+      <input type="submit" type="submit" name="submit">
+
+      </form>
+
+    <div id = "output"></div>
+    <script>
+
+      const myForm = document.getElementById("myForm");
+      myForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+
+      const formdata = new FormData(this);
+      formdata.append('rtype', 'cuser');
+
+      //console.log(formdata);
+      //change this URL
+      fetch("https://web.njit.edu/~tjr44/CS490/createUser.php", {
+      method: 'post' ,
+      body: formdata,
+
+      }).then( function(response) {
+      //console.log(response.body());
+      return response.json();
+
+      }).then(function(json){
+      //console.log(json);
+      //Error Checking return message
+      //update div tag with response
+
+      document.getElementById("output").innerHTML = JSON.stringify(json);
+
+      }).catch(function(error){
+      console.log(error);
+      })
+
+      });
+
+
+
+      </script>
+    </div>
+
+</body>
+
+</html>
