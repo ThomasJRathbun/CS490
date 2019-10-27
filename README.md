@@ -21,6 +21,7 @@ https://kbroman.org/github_tutorial/pages/init.html
 
 #Backend
 
-1) Create necessary tables for sorting.
-2) Add to DB the necessary columns for each table.
-3) Create Sorting/Search Queries
+1) Add to DB the necessary columns for each table. || COMEPLE
+
+TODO:
+2) Create Filter/Search Queries || 
