@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta  charset="UTF-8">
+		<title>Cs-490 Project log in screen</title>
+		<link rel="stylesheet" type = "text/css" href="login_styles.css">  
+	
+
+	</head>
+
+	<body>
+			<div id = "wrapper">
+			<form class ="form" id ="myForm">
+					<p>
+					<label for="user_name">username</label>
+					<input type="text" name="user_name" id = "user_name">
+					</p>
+					<p>
+					<label for ="user_password"> password</label>
+					<input type="password" name="user_password" id="user_password">
+					<p>
+					<input type="submit" type="submit" name="submit">
+					</p>
+
+			</form>
+			</div>	
+			<div id = "output"></div>
+			<div id = "user_type"></div>
+			<script>
+			
+			const myForm = document.getElementById("myForm");
+    			myForm.addEventListener('submit', function (e) {
+				e.preventDefault();
+					
+			
+				const formdata = new FormData(this);
+				formdata.append('rtype', 'ruser');
+
+			//	console.log(formdata);
+				
+					fetch("https://web.njit.edu/~er272/logInScreen.php", {
+						method: 'post' ,
+						body: formdata,
+					
+					}).then( function(response) {
+					//	console.log(response.body());
+						return response.json();
+
+					}).then(function(json){
+						console.log(json);
+						//Error Checking return message
+						//update div tag with response
+						localStorage.user_name = document.getElementById("user_name").value;
+	
+						document.getElementById("output").innerHTML = JSON.stringify(json);  
+					
+						document.getElementById("user_type").innerHTML = json.user_type;
+						
+						if(json.user_type == 1){
+							//nav to student landing page
+							window.location.href = "instructor_home_page.html";
+						}else if(json.user_type == 0){
+							//nav to instructor landing page
+							window.location.href = "student_home_page.html";
+						}else{
+							document.getElementById("output").innerHTML = "failed to login";
+						}
+						
+					}).catch(function(error){
+						console.log(error);
+					})
+
+				});
+					
+
+				
+			</script>
+		</div>
+		
+	</body>
+
+</html>

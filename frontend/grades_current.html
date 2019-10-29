@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta  charset="UTF-8">
+    <title>Student Home Page</title>
+    <link rel="stylesheet" type = "text/css" href="styles.css">		
+</head>
+
+<body>
+	<header>
+		<h1> Grades are listed below</h1>
+	</header>
+	<div id="load_grades"></div>	
+	<script>
+                var requestExamGrades = new FormData();
+                requestExamGrades.append('rtype', 'rstudentgrades');
+		requestExamGrades.append('user_name' , localStorage.user_name);
+                //fetch the grades
+                fetch("https://web.njit.edu/~er272/logInScreen.php", {
+                        method: 'post',
+                        body: requestExamGrades,
+
+                }).then(function(response){
+                        return response.json();
+                }).then(function(json){
+                        console.log(json);
+                        var loadGradesDiv = document.getElementById("load_grades");
+
+                        for(var i = 0; i <json.length; i++){
+                                var examNameDiv = document.createElement("div");
+                                examNameDiv.innerHTML = json[i].test_name;
+                                loadGradesDiv.appendChild(examNameDiv);
+                                var examGradeDiv = document.createElement("div");
+                                examGradeDiv.innerHTML = json[i].test_grade;
+                                loadGradesDiv.appendChild(examGradeDiv);
+                        }
+                }).catch(function(error){
+                        console.log(error);
+                })
+        </script>
+	
+
+</body>
+</html>
+
+</html>

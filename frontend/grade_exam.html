@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta  charset="UTF-8">
+    <title>Exam Creator</title>
+    <link rel="stylesheet" type = "text/css" href="styles.css">		
+</head>
+
+<body>
+	<div id = "wrapper">
+		<header>
+			<h1> Create Exams</h1>
+		</header>	
+		<nav>
+			<ul class = "main_menu">
+				<li><a href="create_exam.html"> Create Exam </a></li>
+				<li><a href="question_bank.html"> Question Bank </a></li>
+				<li><a href="exams.html"> Exam Bank </a></li> 
+				<li><a href="grade_exam.html"> Grade Exam </a></li>
+			</ul>
+		</nav>
+	</div>
+	<div id="load_grades">
+
+	</div>
+	<script>
+		var requestExamGrades = new FormData();
+		requestExamGrades.append('rtype', 'rgrades');
+		
+		//fetch the grades
+		fetch("https://web.njit.edu/~er272/logInScreen.php", {
+			method: 'post',
+			body: requestExamGrades,
+			
+		}).then(function(response){
+			return response.json();
+		}).then(function(json){
+			console.log(json);
+			var loadGradesDiv = document.getElementById("load_grades");
+			
+			for(var i = 0; i <json.length; i++){
+				var userNameDiv = document.createElement("div");
+				userNameDiv.innerHTML = json[i].user_name;
+				loadGradesDiv.appendChild(userNameDiv);
+				var examNameDiv = document.createElement("div");
+				examNameDiv.innerHTML = json[i].test_name;
+				loadGradesDiv.appendChild(examNameDiv);
+				var examGradeDiv = document.createElement("div");
+				examGradeDiv.innerHTML = json[i].test_grade;
+				loadGradesDiv.appendChild(examGradeDiv);
+			}
+		}).catch(function(error){
+			console.log(error);
+		})		
+	</script>
+
+
+	
+</body>
+</html>
