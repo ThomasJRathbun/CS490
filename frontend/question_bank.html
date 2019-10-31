@@ -1,0 +1,364 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta  charset="UTF-8">
+    <title>Exam Creator</title>
+    <link rel="stylesheet" type = "text/css" href="styles.css">		
+</head>
+
+<body>
+	<div id = "wrapper">
+		<header>
+			<h1> Create Exams</h1>
+		</header>	
+		<nav>
+			<ul class = "main_menu">
+				<li><a href="create_exam.html"> Create Exam </a></li>
+				<li><a href="question_bank.html"> Question Bank </a></li>
+				<li><a href="exams.html"> Exam Bank </a></li> 
+				<li><a href="grade_exam.html"> Grade Exam </a></li>
+			</ul>
+		</nav>
+	</div>
+	<section>
+
+	<form class ="form" id ="questionForm">
+		
+		<label for="question_name">Question Name</label>
+		<input type="text" name="question_name" id ="question_name">
+		
+		<label for ="question_body">Question Body</label>
+		<input type="test" name="question_body" id="question_body">
+		
+		
+		<label for="question_difficulty">Question Difficulty</label>
+		<input type="text" name="question_difficulty" id ="question_difficulty">
+		
+		
+		<label for="input_one">Testcase Input One</label>
+		<input type="text" name="input_one" id ="input_one">
+		
+		<label for="input_two">Testcase Input Two</label>
+		<input type="text" name="input_two" id ="input_two">
+		
+		<label for="result_one">Result One</label>
+		<input type="text" name="result_one" id ="result_one">
+		
+		<label for="result_two">Result Two</label>
+		<input type="text" name="result_two" id="result_two">
+		
+		<input type="submit" value="add question" id = "add_question">
+   
+	</form>
+
+    <div id ="question_submit"></div>
+    <script>
+    	//Submit new Question
+    	const questionForm = document.getElementById("questionForm");
+    	questionForm.addEventListener('submit', function(e){
+    		e.preventDefault();
+    		const questionFormData = new FormData(this);
+
+    		questionFormData.append("rtype", "cquestion");
+
+    		fetch("https://web.njit.edu/~er272/logInScreen.php",{
+    			method: 'post',
+    			body: questionFormData,
+    		}).then( function(response){
+    			return response.json();
+    		}).then(function(json){
+    			document.getElementById("question_submit").innerHTML = JSON.stringify(json);
+    		}).then(function(error){
+    			console.log(error);
+    		})
+    	});
+
+    </script>
+	</section>
+
+	<article>
+		<h2>Questions</h2>	
+		<div>
+               		<td>
+                		<table class = "list" id = "questionList">
+                			<thead>
+                       			<tr>
+                            			<th>Q_id</th>
+                                		<th>Q_name </th>
+                                		<th>Q_difficulty</th>
+						<th>Q_body</th>
+						<th>T_case_1</th>
+						<th>T_case_2</th>
+						<th>Result_1</th>
+						<th>Result_2</th>
+                       			</tr>
+                			</thead>
+                		<tbody>
+
+                		</tbody>
+                     	
+              		  	</table>
+               		</td>
+                </div>
+		<h2>Edit Questions</h2>
+		<div>
+ 			<form  class="form" id="editQuestionForm">
+    				<label for="edit_question_name">Question Name</label>
+				<input type="text" name="question_name" id ="edit_question_name">
+		
+				<label for ="edit_question_body">Question Body</label>
+				<input type="test" name="question_body" id="edit_question_body">
+		
+				<label for="edit_question_difficulty">Question Difficulty</label>
+				<input type="text" name="question_difficulty" id ="edit_question_difficulty">
+		
+				<label for="edit_testcase_one">Testcase One</label>
+				<input type="text" name="testcase_one" id ="edit_testcase_one">
+		
+				<label for="edit_testcase_two">Testcase Two</label>
+				<input type="text" name="testcase_two" id ="edit_testcase_two">
+				
+				<label for="edit_result_one">Result One</label>
+                		<input type="text" name="result_one" id ="edit_result_one">
+
+                		<label for="edit_result_two">Result Two</label>
+		                <input type="text" name="result_two" id="edit_result_two">
+
+				<input type="submit" value="update" name="Submit">
+  			</form>
+		</div>
+		
+		<div id ="question_edit"></div>
+		<div id ="question_delete"></div>
+		<script type="text/javascript">
+			
+			function onEdit(td){
+	  			
+			       selectedRow = td.parentElement.parentElement;
+                               document.getElementById("edit_question_name").value = selectedRow.cells[1].innerHTML;
+                               document.getElementById("edit_question_difficulty").value = selectedRow.cells[2].innerHTML;
+                               document.getElementById("edit_question_body").value = selectedRow.cells[3].innerHTML;
+                               document.getElementById("edit_testcase_one").value = selectedRow.cells[4].innerHTML;
+                               document.getElementById("edit_testcase_two").value = selectedRow.cells[5].innerHTML;
+                               document.getElementById("edit_result_one").value = selectedRow.cells[6].innerHTML;
+                               document.getElementById("edit_result_two").value = selectedRow.cells[7].innerHTML;
+
+				const editQuestionForm = document.getElementById("editQuestionForm");
+				editQuestionForm.addEventListener('submit', function(e){
+					e.preventDefault();
+					const editedFormData = new FormData(this);
+					editedFormData.append("question_id",selectedRow.cells[0].innerHTML);
+					//console.log(editedFormData);
+					
+					editedFormData.append("rtype", "uquestion");
+
+					fetch("https://web.njit.edu/~er272/logInScreen.php",{
+						method:'post',
+						body: editedFormData,
+					}).then(function(response){
+						return response.json();
+					}).then(function(json){
+						document.getElementById("question_edit").innerHTML = JSON.stringify(json);		
+					}).then(function(error){
+						console.log(error)
+					})					
+				});
+			}
+			
+			function onDelete(td){
+				 if (confirm('Are you sure to delete this record ?')) {
+        				row = td.parentElement.parentElement;
+					selectedRow = td.parentElement.parentElement;
+					const deleteFormData = new FormData();
+					deleteFormData.append("rtype", "dquestion");
+					deleteFormData.append("question_id", selectedRow.cells[0].innerHTML);
+					
+					fetch("https://web.njit.edu/~er272/logInScreen.php",{
+						method:'post',
+						body:deleteFormData,
+					}).then(function(response){
+						return response.json();
+					}).then(function(json){
+						document.getElementById("question_delete").innerHTML = JSON.stringify(json);
+					}).then(function(error){
+						console.log(error);
+					})
+        				document.getElementById("questionList").deleteRow(row.rowIndex);
+    				}		
+			}
+
+			function insertNewQuestion(data){
+				var table = document.getElementById("questionList").getElementsByTagName('tbody')[0];
+				var newRow = table.insertRow(table.length);
+				
+				cell1 = newRow.insertCell(0);
+    				cell1.innerHTML = data.question_id;
+                                
+				cell2 = newRow.insertCell(1);
+                                cell2.innerHTML = data.question_name;
+                                
+				cell3 = newRow.insertCell(2);
+                                cell3.innerHTML = data.question_difficulty;
+                                
+				cell4 = newRow.insertCell(3);
+                                cell4.innerHTML = data.question_body;
+                                
+				cell5 = newRow.insertCell(4);
+                                cell5.innerHTML = data.testcase_input_1;
+                                
+				cell6 = newRow.insertCell(5);
+                                cell6.innerHTML = data.testcase_input_2;
+                                
+				cell7 = newRow.insertCell(6);
+                                cell7.innerHTML = data.testcase_result_1;
+                               
+				cell8 = newRow.insertCell(7);
+                                cell8.innerHTML = data.testcase_result_2;
+			
+				cell9 = newRow.insertCell(8);
+   				cell9.innerHTML = `<a onClick="onEdit(this)">Edit</a>
+                       				   <a onClick="onDelete(this)">Delete</a>`;
+			}
+			
+			//Fetch Questions if any exist yet
+			var requestForm = new FormData();
+			requestForm.append('rtype', 'rquestion');
+			//console.log(requestForm);
+			fetch("https://web.njit.edu/~er272/logInScreen.php",{
+				method: 'post',
+				body: requestForm,
+			}).then(function(response){
+				return response.json();
+			}).then(function(json){
+				//For testing
+				console.log(json); 
+				//document.getElementById("load_questions").innerHTML = JSON.stringify(json);
+				
+				//parse json here (load questions)
+				for(var i = 0; i < json.length; i++){
+					var question = json[i];
+					insertNewQuestion(question);
+					
+				}
+				
+			}).catch(function(error){
+				console.log(error);
+			})
+			
+		</script>
+	</article>
+	<article>
+		<div id="create_exam"></div>
+		<h2> Create Exams</h2>
+			<form class = "form" id ="createExamForm">
+					
+			</form>
+			<script>
+				// load questions into exam form
+				var rq = new FormData();
+				rq.append('rtype', 'rquestion');
+				fetch("https://web.njit.edu/~er272/logInScreen.php",{
+					method: 'post',
+					body: rq,
+				}).then(function(response){
+					return response.json();
+				}).then(function(json){
+					console.log(json);
+					
+					var form = document.getElementById("createExamForm");
+					/*
+					var  lbl = document.createElement("label");
+					lbl.innerHTML ="Exam Name";
+					var ename = document.createElement("input");
+					ename.type = "text";
+					ename.name = "exam name";
+					ename.id = "exam name";
+					form.appendChild(lbl);
+					form.appendChild(ename);
+					*/
+					var br = document.createElement("br");
+				//	form.appendChild(br);
+					
+					for(var i = 0; i < json.length; i++){
+						
+						var label = document.createElement("label");		
+						var checkbox = document.createElement("input");
+                                      	  	checkbox.type = "checkbox";
+                                        	checkbox.name = json[i].question_id;
+						checkbox.value = json[i].question_id;
+						label.innerHTML = json[i].question_name;
+						form.appendChild(checkbox);
+						form.appendChild(label);
+						var br = document.createElement("br");						
+						form.appendChild(br);
+							
+					}
+						var  lbl = document.createElement("label");
+                                       		lbl.innerHTML ="Exam Name";
+                                        	var ename = document.createElement("input");
+                                        	ename.type = "text";
+                                        	ename.name = "exam name";
+                                        	ename.id = "exam name";
+                                        	form.appendChild(lbl);
+                                        	form.appendChild(ename);
+						//form.appendChild(br);
+		
+						var submit = document.createElement("input");
+						submit.type = "submit";
+						submit.value = "Create Exam";
+						submit.name = "create exam";
+						form.appendChild(submit);
+									
+			
+				}).then(function(error){
+					console.log(error);
+				})
+
+				//event listener for exam submission
+				const examCreationForm = document.getElementById("createExamForm");
+				examCreationForm.addEventListener('submit',function(e){
+					e.preventDefault();
+					const examFormData = new FormData(this);
+					examFormData.append("rtype", "ctest");
+
+					fetch("https://web.njit.edu/~er272/logInScreen.php",{
+						method: 'post',
+						body: examFormData,
+					
+					}).then(function(response){
+						return response.json();
+					}).then(function(json){
+						document.getElementById("create_exam").innerHTML = JSON.stringify(json);
+					}).then(function(error){
+						console.log(error);
+					})
+				});
+				
+				
+			</script>
+			
+		<h2>Exams</h2>
+		<div id = "load_exams"></div>
+			<script>
+				var examsrequestForm = new FormData();
+				examsrequestForm.append('rtype', 'rexams');
+				fetch("https://web.njit.edu/~er272/logInScreen.php",{
+					method: 'post',
+					body: examsrequestForm,
+				}).then(function(response){
+					return response.json();
+				}).then(function(json){
+					console.log(json);
+					document.getElementById("load_exams").innerHTML = JSON.stringify(json);
+										
+				}).catch(function(error){
+					console.log(error);	
+				})
+			</script>
+				
+	</article>
+	
+</body>
+</html>

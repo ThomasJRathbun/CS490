@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta  charset="UTF-8">
+    <title>Student Home Page</title>
+    <link rel="stylesheet" type = "text/css" href="student_styles.css">		
+</head>
+
+<body>
+	<div id = "wrapper">
+		<header>
+			<h1> Welcome to test taker</h1>
+		</header>	
+		<nav>
+			<ul class = "main_menu">
+				<li><a href="grades_current.html"> grades </a></li>
+				<li><a href="#"></a> about </li>
+				<li><a href="#"></a> contact </li>
+			</ul>
+		</nav>
+	</div>
+	<h2>Tests Available Below</h2>
+	<div id ="load_tests"></div>
+	<div id ="container">
+
+		<form class ="form" id ="examList">
+		
+		</form>
+		<br>
+		<form class ="form" id ="exam">
+		
+		</form>
+		<div id = "answers_submit_response">
+
+		</div>
+	</div>
+	<script>
+		//fetch exam
+		var requestTestForm = new  FormData();
+		requestTestForm.append('rtype', 'rexams');
+		var TEST_ID;	
+		//requestTestForm.append('rtype',localStorage.user_name);
+		
+			fetch("https://web.njit.edu/~er272/logInScreen.php",{
+				method: 'post',
+				body: requestTestForm,
+			}).then(function(response){
+				return response.json();
+			}).then(function(json){
+				//for testing
+				console.log(json);
+				
+				var examListForm = document.getElementById("examList");
+				
+				//populate form with exams
+				for(var i = 0; i<json.length; i++){
+					var label = document.createElement("label");
+					label.for = json[i].test_id;
+					label.innerHTML = json[i].test_name;
+					var radio = document.createElement("input");
+					radio.type = "radio";
+					radio.value = json[i].test_id;					
+					//radio.name = json[i].test_id;
+					radio.name = "test_id";					
+					var br = document.createElement("break");
+					examListForm.appendChild(br);
+					examListForm.appendChild(label);
+					examListForm.appendChild(radio);
+					examListForm.appendChild(br);
+					
+				}
+				var br = document.createElement("break");
+				var submit = document.createElement("input");
+				submit.type = "submit";
+				submit.value = "Take";
+				submit.name = "Take";
+				examListForm.appendChild(br);
+				examListForm.appendChild(submit);
+				
+										
+			}).catch(function(error){
+				console.log(error);
+			})
+
+		//add listener for which exam to take
+                const examListForm = document.getElementById("examList");
+		examListForm.addEventListener('submit', function(e){
+			e.preventDefault();
+			const examForm = new FormData(this);
+			TEST_ID = examForm.get("test_id");
+			console.log(TEST_ID); 
+			examForm.append('rtype', 'rtest');			
+			fetch("https://web.njit.edu/~er272/logInScreen.php",{
+				method:'post',
+				body:  examForm,
+			}).then(function(response){
+				return response.json();
+			}).then(function(json){
+				//User submits form and questions for exam are returned
+				console.log(json);
+				//Post questions in form and hide exams
+				document.getElementById("examList").style.display = "none";
+				const questionsExam = document.getElementById("exam");
+				
+				for(var i = 0; i <json.length; i++){
+					var q_id_lbl = document.createElement("label");
+					q_id_lbl.innerHTML = json[i].question_id;
+					q_id_lbl.for = json[i].question_id;
+
+					var q_body_lbl = document.createElement("label");
+					q_body_lbl.innerHTML = json[i].question_body;
+
+					var br = document.createElement("break");
+				
+					var txtArea = document.createElement("textarea");
+					txtArea.id = json[i].question_id;
+					//ADDED THIS
+					var s = "q";
+					txtArea.name =s.concat(json[i].question_id);
+					txtArea.placeHolder = "Write answer here";
+					txtArea.style = "height:200px";
+					
+					questionsExam.appendChild(q_id_lbl);
+					questionsExam.appendChild(br);
+					questionsExam.appendChild(q_body_lbl);
+					questionsExam.appendChild(br);
+					questionsExam.appendChild(txtArea);
+					questionsExam.appendChild(br);
+										
+						  
+				}
+				
+				var submit = document.createElement("input");
+                                submit.type = "submit";
+                                submit.value = "submit";
+                                submit.name = "submit";
+                                questionsExam.appendChild(submit);
+				//add listener for exam submit when stu done taking test
+				questionsExam.addEventListener("submit",function(e){
+					e.preventDefault();
+					var examData = new FormData(this);
+					examData.append("rtype", "canswer");
+					examData.append("test_id", TEST_ID );
+					console.log(localStorage.user_name);
+					examData.append("user_name", localStorage.user_name);
+					fetch("https://web.njit.edu/~er272/logInScreen.php",{
+						method: 'post',
+						body: examData,
+					}).then(function(response){
+						return response.json();
+					}).then(function(json){
+						document.getElementById("answer_submit_response").innerHTML = JSON.stringify(json);
+					}).catch(function(error){
+						console.log(error);
+					})
+				});
+				
+			}).then(function(error){
+				console.log(error);
+			})
+		}); 
+		
+		
+	</script>	
+	
+</body>
+</html>
