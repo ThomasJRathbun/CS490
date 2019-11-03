@@ -133,13 +133,13 @@ function ruser($dbh){
 	$password = $_POST['user_password'];
 	$password = password_hash($password, PASSWORD_DEFAULT);
 
-	$select = "SELECT user_name, user_password, user_type FROM t_users WHERE user_name =  '$userName' ";
+	$select = "SELECT * FROM t_users WHERE user_name =  '$userName' ";
 	$q = mysqli_query($dbh, $select);
   
 	$row = mysqli_fetch_array($q, MYSQLI_ASSOC);
 	logInfo( is_null($row) . " : " . password_verify($_POST['user_password'], $row['user_password']));
 	if (is_null($row) == FALSE && password_verify($_POST['user_password'], $row['user_password']) == TRUE){
-		$json = array('rtype' => 'ruser', 'user_type' => $row['user_type']);
+		$json = array('rtype' => 'ruser', 'user_type' => $row['user_type'], 'user_id' => $row['user_id']);
     logInfo("ERROR " . mysqli_error($dbh) . json_encode($json));
 		return json_encode($json); 
 	}
@@ -226,10 +226,12 @@ function rquestion($dbh){
   $q_name = array('question_name' => $qrow['question_name']);
   $q_body = array('question_body' => $qrow['question_body']);
   $q_diff = array('question_difficulty' => $qrow['question_difficulty']);
+  $q_top = array('question_topic' => $qrow['question_topic']);
        $questionArray = array_merge($questionArray,$q_id);
        $questionArray = array_merge($questionArray,$q_name);
        $questionArray = array_merge($questionArray,$q_body);
        $questionArray = array_merge($questionArray,$q_diff);
+       $questionArray = array_merge($questionArray,$q_top);
        $id = $qrow['question_id'];
 	 	   $testcases = "SELECT * FROM $t_testcases WHERE testcase_question_id = '$id'";
 		   $testcaserows = mysqli_query($dbh, $testcases);  
@@ -300,7 +302,7 @@ function ctest($dbh){
   $b_testquestions = "b_testquestions ";
   $test_name = $_POST['exam_name'];
   $test_questions = count($_POST) - 2;
-  
+  $question_points = $_POST['question_points'];  
   $query = "INSERT INTO $t_tests (test_name, test_questions) VALUES ( '$test_name' , '$test_questions')";
   if(mysqli_query($dbh, $query)){
       logInfo("CREATING A TEST");
@@ -319,7 +321,7 @@ else{
     }
     logInfo("QUESTION ID: $question");
     
-    $query2 = "INSERT INTO $b_testquestions (test_id, question_id) VALUES ( '$test_id', '$question');";
+    $query2 = "INSERT INTO $b_testquestions (test_id, question_id, question_points) VALUES ( '$test_id', '$question', '$question_points');";
     mysqli_query($dbh, $query2);
     $i++;
   }
@@ -388,62 +390,7 @@ function rtest($dbh){
    logInfo(json_encode($json));
    return json_encode($json);
 }
-///////////////////////////////////////
 
-
-
-
-
-
-
-
-
-/*
-function rtest($dbh){
-   $t_tests = "t_tests";
-   $b_testquestions = "b_testquestions";
-	 $t_questions = "t_questions";
-	 $t_testcases = "t_testcases";
-   $test_id = $_POST['test_id'];
-   
-  
-   $questions = "SELECT * FROM $t_questions WHERE question_id  IN ( SELECT question_id FROM $b_testquestions WHERE test_id = $test_id)";
-	 $questionrows = mysqli_query($dbh, $questions);
-	 
-	 
-	 $json = array();
-	 while( ($qrow = mysqli_fetch_array($questionrows)) <> NULL ){
-  //BUILD Question array [name,body,difficulty] for each question
-  $questionArray = array();
-  $q_id   = array('question_id' => $qrow['question_id']);
-  $q_name = array('question_name' => $qrow['question_name']);
-  $q_body = array('question_body' => $qrow['question_body']);
-  $q_diff = array('question_difficulty' => $qrow['question_difficulty']);
-       //array_push($questionArray, $q_id, $q_name, $q_body, $q_diff);
-       $questionArray = array_merge($questionArray,$q_id);
-       $questionArray = array_merge($questionArray,$q_name);
-       $questionArray = array_merge($questionArray,$q_body);
-       $questionArray = array_merge($questionArray,$q_diff);
-       $id = $qrow['question_id'];
-       
-       $id = $qrow['question_id'];
-       $testcases = "SELECT * FROM $t_testcases WHERE testcase_question_id = '$id'";
-       $testcaserows = mysqli_query($dbh, $testcases);  
-   while( ($trow = mysqli_fetch_array($testcaserows)) <> NULL){
-   //ADD to Question array [name,body,difficulty,testcase_input, testcase_result]  for each testcase
-           $t_in = array("testcase_input_$i" => $trow['testcase_input']);
-           $t_out = array("testcase_result_$i" =>  $trow['testcase_result']);
-           //array_push($questionArray, $t_in, $t_out);
-           $questionArray = array_merge($questionArray, $t_in);
-           $questionArray = array_merge($questionArray, $t_out);
-           $i += 1;
-   }
-	     array_push($json, $newVal);
-   }
-
-	 return json_encode($json); 
-}
-*/
 
 function dtest($dbh){
     deleterow($dbh, "t_tests", $_POST['test_id']);
@@ -639,4 +586,67 @@ foreach($grades as $grade){
   logInfo(json_encode($json));
   return json_encode($json);
 }
+
+
+
+
+///////////////////////////////////////////////////////
+
+function gradeTable($dbh){
+$user_id = $_POST['user_id'];
+$test_id = $_POST['test_id'];
+
+$query = "SELECT answer_id, answer_question_id FROM t_answers WHERE user_id = '$user_id' AND test_id = '$test_id'";
+
+$answers = mysqli_query($dbh, $query);
+
+$answer_array = array();
+while( ($answer = mysqli_fetch_array($answers)) <> NULL ){
+    array_push($answer_array, $answer);
+}
+
+$json = array();
+foreach( $answer_array as $answer){
+    $answer_id = $answer['answer_id'];
+    $q = "SELECT * FROM t_questionResults WHERE answer_id = '$answer'";
+    
+    $results = mysqli_query($dbh, $q);
+    $results = mysqli_fetch_array($results);
+    $data = array("question_id" => $results['question_id'], "pass_name" => $results['pass_name'], "pass_constraint" => $results['pass_constraint'], "pass_testcase_1" => $results['pass_testcase_1'], "pass_testcase_2" => $results['pass_testcase_2'], "pass_testcase_3" => $results['pass_testcase_3'], "pass_testcase_4" => $results['pass_testcase_4'], "pass_testcase_5" => $results['pass_testcase_5'], "pass_testcase_6" => $results['pass_testcase_6']);
+
+    array_push($json, $data );
+    }
+}
+
+
+function testReport($dbh){
+$user_id = $_POST['user_id'];
+$q = "SELECT test_id, test_name FROM t_assignedtests WHERE user_id = '$user_id'";
+
+$tests = mysqli_query($dbh, $q);
+$json = array();
+while( ($test = mysqli_fetch_array($tests)) <> NULL){
+    array_push($json, array( $test_name -> $test_id));
+}
+
+return json_encode($json);
+
+}
+
+
+function userReport($dbh){
+$q = "SELECT user_name, user_id FROM t_users";
+
+$users = mysqli_query($dbh, $q);
+$json = array();
+while( ($user = mysqli_fetch_array($users)) <> NULL){
+    array_push($json, array( $user_name -> $user_id));
+}
+
+return json_encode($json);
+
+}
+
+
+
 ?>
