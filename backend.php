@@ -159,12 +159,15 @@ function cquestion($dbh){
 	 $question_name = $_POST['question_name'];
 	 $question_body = $_POST['question_body'];
 	 $question_difficulty = $_POST['question_difficulty'];
-	 $testcase_input1 = $_POST['input_one'];
+	 
+   /*
+   $testcase_input1 = $_POST['input_one'];
 	 $testcase_result1 = $_POST['result_one'];
 	 $testcase_input2 = $_POST['input_two'];
 	 $testcase_result2 = $_POST['result_two'];
 	 $question_topic   = $_POST['question_topic'];
-
+   */
+   
 //QUESTION INSERT	 
 	 $query = "INSERT INTO $t_questions (question_name, question_body, question_difficulty, question_topic) VALUES ( '$question_name' , '$question_body' , '$question_difficulty', '$question_topic' )";
 		  
@@ -178,9 +181,19 @@ function cquestion($dbh){
 		   $json = array('rtype' => 'cquestion', 'question_name' => 'FAILED');
 		   return json_encode($json);
 	 }
+//////////////////////////
+//loop through testcases//
+//////////////////////////
 
-//TESTCASE INSERT
-	 $query = "INSERT INTO $t_testcases (testcase_question_id, testcase_input, testcase_result) VALUES ( '$testcase_question_id' , '$testcase_input1' , '$testcase_result1')";
+$i = 1;
+$arrayInput  = "testcase_input_".$i;
+$arrayResult = "testcase_result_".$i;
+while( array_key_exists($arrayKey,$_POST)){
+$testcase_input  =  $_POST[$arrayInput];
+$testcase_result =  $_POST[$arrayResult];
+logInfo($arrayInput  . " :: " .  $arrayResult);
+
+$query = "INSERT INTO $t_testcases (testcase_question_id, testcase_input, testcase_result) VALUES ( '$testcase_question_id' , '$testcase_input' , '$testcase_result')";
 
 	 if(mysqli_query($dbh, $query)){
 	     logInfo($query);
@@ -191,22 +204,9 @@ function cquestion($dbh){
 		   logInfo(json_encode($json));
 		   return json_encode($json);
 	 }
+  $i++;
+}}
 
-
-	 $query = "INSERT INTO $t_testcases (testcase_question_id, testcase_input, testcase_result) VALUES ( '$testcase_question_id' ,'$testcase_input2' , '$testcase_result2')";
-
-	 if(mysqli_query($dbh, $query)){
-	     logInfo($query);
-	 	   $json = array('rtype' => 'cquestion', 'question_name' => $question_name);
-		   return json_encode($json);
-   }
-	 else{
-       logInfo($query . " DIDNT WORK 3");
-		   $json = array("QUERY FAIL::\n $query");
-		   logInfo(json_encode($json));
-		   return json_encode($json);
-	 }
-}
 
 
 function rquestion($dbh){
@@ -300,9 +300,10 @@ function ctest($dbh){
 
   $t_tests = "t_tests";
   $b_testquestions = "b_testquestions ";
-  $test_name = $_POST['exam_name'];
+  $test_name = $_POST['test_name'];
   $test_questions = count($_POST) - 2;
-  $question_points = $_POST['question_points'];  
+//  $question_points = $_POST['question_points'];  
+  $question_points = 10;  
   $query = "INSERT INTO $t_tests (test_name, test_questions) VALUES ( '$test_name' , '$test_questions')";
   if(mysqli_query($dbh, $query)){
       logInfo("CREATING A TEST");
