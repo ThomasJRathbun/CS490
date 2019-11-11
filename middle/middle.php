@@ -46,9 +46,9 @@ function questionResultCheck(){
     $back_url = "https://web.njit.edu/~tjr44/CS490/backend.php";
     $test_id = $_POST['test_id'];
     $user_name = $_POST['user_name'];
-    
+
     $quikPass = array("rtype"=>"rtesting","test_id" => $test_id);
-    
+
     //logInfo($quikPass);
     $channel = curl_init();
     curl_setopt($channel, CURLOPT_URL, $back_url);
@@ -56,7 +56,7 @@ function questionResultCheck(){
     curl_setopt($channel, CURLOPT_POSTFIELDS, $quikPass);
     curl_setopt($channel, CURLOPT_RETURNTRANSFER, true);
     $backendData = curl_exec($channel);
-    
+
     //logInfo("RETURNED DATA: $backendData");
     $backendData = json_decode($backendData);
     $questionCount = count(array_slice($_POST,0,-3));
@@ -68,21 +68,31 @@ function questionResultCheck(){
         'test_id' => $test_id);
     foreach($backendData as $value){
         $value = (array)$value;
-       // logInfo("1) Final: ". json_encode($final));
+        // logInfo("1) Final: ". json_encode($final));
         //logInfo("VALUE: " . json_encode($value['question_id']));
+        //add additional testcases up to six test cases
         $question_ID = $value['question_id'];
         $question_name = $value['question_name'];
         $testcase_input_1 = $value['testcase_input_1'];
         $testcase_result_1 = $value['testcase_result_1'];
         $testcase_input_2 = $value['testcase_input_2'];
         $testcase_result_2 = $value['testcase_result_2'];
+        $testcase_input_3 = $value['testcase_input_3'];
+        $testcase_result_3 = $value['testcase_result_3'];
+        $testcase_input_4 = $value['testcase_input_4'];
+        $testcase_result_4 = $value['testcase_result_4'];
+        $testcase_input_5 = $value['testcase_input_5'];
+        $testcase_result_5 = $value['testcase_result_5'];
+        $testcase_input_6 = $value['testcase_input_6'];
+        $testcase_result_6 = $value['testcase_result_6'];
+        //$question_points = $value['question_points'];
         //logInfo("QUESTION ID " . $question_ID);
-        
-        
+
+        //will need to get custom score
         $questionScore = 9;
 
-       // $final = array_merge($final, array('question_id' => $question_ID));
-       // logInfo("2) Final: " . json_encode($final));
+        // $final = array_merge($final, array('question_id' => $question_ID));
+        // logInfo("2) Final: " . json_encode($final));
         //Write Student Code into answer.py
         $answer = $_POST["q$question_ID"];
         //logInfo("answer: $answer");
@@ -96,15 +106,16 @@ function questionResultCheck(){
         $name = explode(" ",$answer);
         //logInfo("$answer : *************************************************************************************************************");
         //logInfo("NAME****************************************************\n".json_encode($name));
+        //Need to use this for loop below to chekc for the name of the function and the check if the colon is at the end of the function
         $i = 0;
         foreach($name as $token){
-          //logInfo("TOKEN: $token");
-          if ( strcmp($token, "def") == 0 ){
-             $functionName = explode("(",$name[$i+1])[0];
-             //logInfo("FUNCTION NAME: " . $functionName);
-             break;
-          }
-          $i++;
+            //logInfo("TOKEN: $token");
+            if ( strcmp($token, "def") == 0 ){
+                $functionName = explode("(",$name[$i+1])[0];
+                //logInfo("FUNCTION NAME: " . $functionName);
+                break;
+            }
+            $i++;
         }
         //logInfo("FUNCTION NAME: " .json_encode($functionName));
         //$functionName = exec('python resultCheck.py');
@@ -142,6 +153,34 @@ function questionResultCheck(){
             $questionScore -= 2;
             logInfo("FIRST TIME:: $output2 : $testcase_result_2");
         }
+        $toExec = escapeshellcmd("/afs/cad/linux/anaconda3.6/anaconda/bin/python test.py $testcase_input_3");
+        $output3 = exec($toExec);
+        //logInfo("************************************\n" . $testcase_input_2 .":". $output2);
+        if( strcmp($output3, $testcase_result_3) <> 0){
+            $questionScore -= 2;
+            logInfo("FIRST TIME:: $output3 : $testcase_result_3");
+        }
+        $toExec = escapeshellcmd("/afs/cad/linux/anaconda3.6/anaconda/bin/python test.py $testcase_input_4");
+        $output4 = exec($toExec);
+        //logInfo("************************************\n" . $testcase_input_2 .":". $output2);
+        if( strcmp($output4, $testcase_result_4) <> 0){
+            $questionScore -= 2;
+            logInfo("FIRST TIME:: $output4 : $testcase_result_4");
+        }
+        $toExec = escapeshellcmd("/afs/cad/linux/anaconda3.6/anaconda/bin/python test.py $testcase_input_5");
+        $output5 = exec($toExec);
+        //logInfo("************************************\n" . $testcase_input_2 .":". $output2);
+        if( strcmp($output5, $testcase_result_5) <> 0){
+            $questionScore -= 2;
+            logInfo("FIRST TIME:: $output5 : $testcase_result_5");
+        }
+        $toExec = escapeshellcmd("/afs/cad/linux/anaconda3.6/anaconda/bin/python test.py $testcase_input_6");
+        $output6 = exec($toExec);
+        //logInfo("************************************\n" . $testcase_input_2 .":". $output2);
+        if( strcmp($output6, $testcase_result_6) <> 0){
+            $questionScore -= 2;
+            logInfo("FIRST TIME:: $output6 : $testcase_result_6");
+        }
 
         //Incremement questionCount
         $currentGrade += $questionScore;
@@ -149,7 +188,7 @@ function questionResultCheck(){
 
         $final = array_merge($final, array($question));
     }
-    
+
     //Calculate Grade
     $finalScore = "$currentGrade out of $totalGrade";
 
@@ -158,6 +197,7 @@ function questionResultCheck(){
     $grade2Front = array("test_grade" => "$finalScore");
     //logInfo("FINAL: " . json_encode($final));
 
+    //will
     $channel = curl_init();
     curl_setopt($channel, CURLOPT_URL, $back_url);
     curl_setopt($channel, CURLOPT_POST, true);
@@ -187,24 +227,24 @@ function passthrough(){
 
 
 function logInfo($status){
-	 $rtype = $_POST['rtype'];
-	 $info = "************************************\n[INFO $rtype][";
-	 $info .= date('Y-m-d h:i:sa',time());
-	 $info .= "]\n";
+    $rtype = $_POST['rtype'];
+    $info = "************************************\n[INFO $rtype][";
+    $info .= date('Y-m-d h:i:sa',time());
+    $info .= "]\n";
 
 
-	 foreach( $_POST as $key => $value){
-	 	  $info .= $key;
-		  $info .= ": ";
-		  $info .= $value;
-		  $info .= "\n";
-	 }
+    foreach( $_POST as $key => $value){
+        $info .= $key;
+        $info .= ": ";
+        $info .= $value;
+        $info .= "\n";
+    }
 
-	 $info .= "[argument]:\n $status \n************************************\n";
+    $info .= "[argument]:\n $status \n************************************\n";
 
-	 $log = file_put_contents("log.txt", $info.PHP_EOL, FILE_APPEND | LOCK_EX);
-	 
-	 fwrite($log, $info);
-	 fclose($log);
+    $log = file_put_contents("log.txt", $info.PHP_EOL, FILE_APPEND | LOCK_EX);
+
+    fwrite($log, $info);
+    fclose($log);
 }
 ?>
